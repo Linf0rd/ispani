@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fffbe6;
+  --foreground: #222;
 }
 
 @theme inline {
@@ -22,5 +22,53 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+button, .neo-btn {
+  border-width: 4px;
+  border-style: solid;
+  border-color: #222;
+  border-radius: 1.5rem;
+  box-shadow: 8px 8px 0 0 #000;
+  font-weight: 900;
+  font-size: 1.25rem;
+  color: #222;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+button:active, .neo-btn:active {
+  box-shadow: 2px 2px 0 0 #000;
+}
+
+/* Ensure navbar stays styled correctly */
+nav {
+  background-color: #FFE066 !important;
+}
+
+/* Fix button text visibility */
+button:not(:hover) {
+  color: inherit;
+}
+
+/* Specific button color overrides */
+.btn-primary {
+  color: #222 !important;
+  background-color: #FFE066;
+}
+
+.btn-secondary {
+  color: #fff !important;
+  background-color: #FF6F91;
+}
+
+input, .neo-input {
+  border-width: 3px;
+  border-style: solid;
+  border-color: #222;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
 }
