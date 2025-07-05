@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
 import { resetPasswordSchema } from "@/schemas/auth";
 import { generateSecureToken } from "@/lib/password";
-import { sendPasswordResetEmail } from "@/lib/email";
+import { sendPasswordResetEmail } from "@/lib/email-resend";
 
 const prisma = new PrismaClient();
 

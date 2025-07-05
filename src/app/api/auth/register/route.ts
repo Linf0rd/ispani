@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { signUpSchema } from "@/schemas/auth";
 import { hashPassword, generateSecureToken } from "@/lib/password";
-import { sendVerificationEmail } from "@/lib/email";
+import { sendVerificationEmail } from "@/lib/email-resend";
 import { PrismaClient } from "@/generated/prisma";
 import { ZodError } from "zod";
 
