@@ -1,39 +1,95 @@
 "use client";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signInSchema, signUpSchema, SignInInput, SignUpInput } from "@/schemas/auth";
 
 export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [mode, setMode] = useState<'signin' | 'signup'>("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Sign In Form
+  const signInForm = useForm<SignInInput>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  // Sign Up Form
+  const signUpForm = useForm<SignUpInput>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const handleSignIn = async (data: SignInInput) => {
+    setIsLoading(true);
     setMessage("Signing in...");
-    //  API here for credentials auth
-    await signIn("email", { email, redirect: false });
-    setMessage("Check your email for a sign-in link!");
+    
+    try {
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setMessage("Invalid email or password. Please try again.");
+      } else if (result?.ok) {
+        setMessage("Sign in successful!");
+        closeModal();
+        // Redirect will happen automatically
+      }
+    } catch (error) {
+      setMessage("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleEmailSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMessage("Registering...");
-    // TODO: registration API call
-    setTimeout(() => {
-      setMessage("Registration successful! Check your email for a sign-in link.");
-    }, 1000);
+  const handleSignUp = async (data: SignUpInput) => {
+    setIsLoading(true);
+    setMessage("Creating account...");
+    
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setMessage("Registration successful! Please check your email to verify your account.");
+        signUpForm.reset();
+      } else {
+        setMessage(result.error || "Registration failed. Please try again.");
+      }
+    } catch (error) {
+      setMessage("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const closeModal = () => {
     setShowModal(false);
     setMode("signin");
     setMessage("");
-    setEmail("");
-    setPassword("");
-    setName("");
+    signInForm.reset();
+    signUpForm.reset();
   };
 
   return (
@@ -91,34 +147,44 @@ export default function Home() {
             </div>
             {mode === "signin" ? (
               <>
-                <form onSubmit={handleEmailSignIn} className="w-full flex flex-col items-center mb-4">
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                    className="mb-2 px-4 py-2 border-2 border-black rounded w-full placeholder:text-black/80"
-                  />
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    required
-                    className="mb-2 px-4 py-2 border-2 border-black rounded w-full placeholder:text-black/80"
-                  />
+                <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="w-full flex flex-col items-center mb-4">
+                  <div className="w-full mb-4">
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      {...signInForm.register("email")}
+                      className="w-full px-4 py-2 border-2 border-black rounded placeholder:text-black/80"
+                    />
+                    {signInForm.formState.errors.email && (
+                      <p className="text-red-600 text-sm mt-1">{signInForm.formState.errors.email.message}</p>
+                    )}
+                  </div>
+                  
+                  <div className="w-full mb-4">
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      {...signInForm.register("password")}
+                      className="w-full px-4 py-2 border-2 border-black rounded placeholder:text-black/80"
+                    />
+                    {signInForm.formState.errors.password && (
+                      <p className="text-red-600 text-sm mt-1">{signInForm.formState.errors.password.message}</p>
+                    )}
+                  </div>
+                  
                   <button
                     type="submit"
-                    className="bg-bybYellow border-2 border-black text-bybBlack font-bold px-6 py-3 rounded-lg shadow-neo-brutalism hover:bg-yellow-400 hover:text-bybBlack transition w-full mb-2"
+                    disabled={isLoading}
+                    className="bg-bybYellow border-2 border-black text-bybBlack font-bold px-6 py-3 rounded-lg shadow-neo-brutalism hover:bg-yellow-400 hover:text-bybBlack transition w-full mb-2 disabled:opacity-50"
                     style={{color: '#222'}}
                   >
-                    Sign in with Email
+                    {isLoading ? "Signing in..." : "Sign in with Email"}
                   </button>
                 </form>
                 <button
                   onClick={() => signIn("google")}
-                  className="bg-blue-600 text-white font-bold px-6 py-3 rounded-lg border-2 border-black shadow-neo-brutalism hover:bg-blue-700 hover:text-white transition w-full"
+                  disabled={isLoading}
+                  className="bg-blue-600 text-white font-bold px-6 py-3 rounded-lg border-2 border-black shadow-neo-brutalism hover:bg-blue-700 hover:text-white transition w-full disabled:opacity-50"
                   style={{color: '#fff'}}
                 >
                   Sign in with Google
@@ -126,37 +192,62 @@ export default function Home() {
                 {message && <div className="mt-2 text-center text-sm text-green-700">{message}</div>}
               </>
             ) : (
-              <form onSubmit={handleEmailSignUp} className="w-full flex flex-col items-center">
-                <input
-                  type="text"
-                  placeholder="Name"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  required
-                  className="mb-2 px-4 py-2 border-2 border-black rounded w-full placeholder:text-black/80"
-                />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  className="mb-2 px-4 py-2 border-2 border-black rounded w-full placeholder:text-black/80"
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                  className="mb-2 px-4 py-2 border-2 border-black rounded w-full placeholder:text-black/80"
-                />
+              <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="w-full flex flex-col items-center">
+                <div className="w-full mb-4">
+                  <input
+                    type="text"
+                    placeholder="Full Name"
+                    {...signUpForm.register("name")}
+                    className="w-full px-4 py-2 border-2 border-black rounded placeholder:text-black/80"
+                  />
+                  {signUpForm.formState.errors.name && (
+                    <p className="text-red-600 text-sm mt-1">{signUpForm.formState.errors.name.message}</p>
+                  )}
+                </div>
+                
+                <div className="w-full mb-4">
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    {...signUpForm.register("email")}
+                    className="w-full px-4 py-2 border-2 border-black rounded placeholder:text-black/80"
+                  />
+                  {signUpForm.formState.errors.email && (
+                    <p className="text-red-600 text-sm mt-1">{signUpForm.formState.errors.email.message}</p>
+                  )}
+                </div>
+                
+                <div className="w-full mb-4">
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    {...signUpForm.register("password")}
+                    className="w-full px-4 py-2 border-2 border-black rounded placeholder:text-black/80"
+                  />
+                  {signUpForm.formState.errors.password && (
+                    <p className="text-red-600 text-sm mt-1">{signUpForm.formState.errors.password.message}</p>
+                  )}
+                </div>
+                
+                <div className="w-full mb-4">
+                  <input
+                    type="password"
+                    placeholder="Confirm Password"
+                    {...signUpForm.register("confirmPassword")}
+                    className="w-full px-4 py-2 border-2 border-black rounded placeholder:text-black/80"
+                  />
+                  {signUpForm.formState.errors.confirmPassword && (
+                    <p className="text-red-600 text-sm mt-1">{signUpForm.formState.errors.confirmPassword.message}</p>
+                  )}
+                </div>
+                
                 <button
                   type="submit"
-                  className="bg-bybYellow border-2 border-black text-bybBlack font-bold px-6 py-3 rounded-lg shadow-neo-brutalism hover:bg-yellow-400 hover:text-bybBlack transition w-full mb-2"
+                  disabled={isLoading}
+                  className="bg-bybYellow border-2 border-black text-bybBlack font-bold px-6 py-3 rounded-lg shadow-neo-brutalism hover:bg-yellow-400 hover:text-bybBlack transition w-full mb-2 disabled:opacity-50"
                   style={{color: '#222'}}
                 >
-                  Sign up
+                  {isLoading ? "Creating Account..." : "Sign up"}
                 </button>
                 {message && <div className="mt-2 text-center text-sm text-green-700">{message}</div>}
               </form>
