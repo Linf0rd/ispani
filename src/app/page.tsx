@@ -43,7 +43,11 @@ export default function Home() {
       });
 
       if (result?.error) {
-        setMessage("Invalid email or password. Please try again.");
+        if (result.error.includes("verify your email")) {
+          setMessage("Please verify your email before signing in. Check your inbox for the verification link.");
+        } else {
+          setMessage("Invalid email or password. Please try again.");
+        }
       } else if (result?.ok) {
         setMessage("Sign in successful!");
         closeModal();
@@ -57,10 +61,12 @@ export default function Home() {
   };
 
   const handleSignUp = async (data: SignUpInput) => {
+    console.log("Sign up form submitted with data:", data);
     setIsLoading(true);
     setMessage("Creating account...");
     
     try {
+      console.log("Sending registration request...");
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
@@ -69,7 +75,9 @@ export default function Home() {
         body: JSON.stringify(data),
       });
 
+      console.log("Registration response status:", response.status);
       const result = await response.json();
+      console.log("Registration response:", result);
 
       if (response.ok) {
         setMessage("Registration successful! Please check your email to verify your account.");
@@ -78,6 +86,7 @@ export default function Home() {
         setMessage(result.error || "Registration failed. Please try again.");
       }
     } catch (error) {
+      console.error("Registration error:", error);
       setMessage("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);

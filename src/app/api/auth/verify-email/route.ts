@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
-import { isTokenExpired } from "@/lib/auth-utils";
+import { isTokenExpired } from "@/lib/password";
 
 const prisma = new PrismaClient();
 

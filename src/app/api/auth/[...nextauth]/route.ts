@@ -27,35 +27,52 @@ export const authOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        console.log("Credentials sign-in attempt:", credentials?.email);
+        
         if (!credentials?.email || !credentials?.password) {
+          console.log("Missing email or password");
           return null;
         }
 
         try {
           // Validate input
           const { email, password } = signInSchema.parse(credentials);
+          console.log("Credentials validation successful");
 
           // Find user by email
           const user = await prisma.user.findUnique({
             where: { email },
           });
 
-          if (!user || !user.password) {
+          if (!user) {
+            console.log("User not found:", email);
             return null;
           }
 
+          if (!user.password) {
+            console.log("User has no password (OAuth user):", email);
+            return null;
+          }
+
+          console.log("User found:", user.id, "Email verified:", user.emailVerified);
+
           // Check if email is verified
           if (!user.emailVerified) {
+            console.log("Email not verified for user:", email);
             throw new Error("Please verify your email before signing in.");
           }
 
           // Verify password
+          console.log("Verifying password...");
           const isPasswordValid = await verifyPassword(password, user.password);
+          console.log("Password valid:", isPasswordValid);
 
           if (!isPasswordValid) {
+            console.log("Invalid password for user:", email);
             return null;
           }
 
+          console.log("Sign-in successful for user:", user.id);
           return {
             id: user.id,
             email: user.email,
