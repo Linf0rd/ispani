@@ -51,7 +51,8 @@ export default function Home() {
       } else if (result?.ok) {
         setMessage("Sign in successful!");
         closeModal();
-        // Redirect will happen automatically
+        // Redirect to dashboard after successful sign in
+        window.location.href = "/dashboard";
       }
     } catch (error) {
       setMessage("An error occurred. Please try again.");

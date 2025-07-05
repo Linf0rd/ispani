@@ -107,6 +107,12 @@ export const authOptions = {
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // Redirect to dashboard after successful sign in
+      if (url.startsWith("/")) return `${baseUrl}/dashboard`;
+      else if (new URL(url).origin === baseUrl) return `${baseUrl}/dashboard`;
+      return `${baseUrl}/dashboard`;
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

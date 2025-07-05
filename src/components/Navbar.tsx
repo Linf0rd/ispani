@@ -21,22 +21,24 @@ export default function Navbar() {
         </Link>
       </div>
       <div className="flex gap-4 items-center">
-        <Link href="/dashboard" className="font-bold text-lg text-bybBlack px-6 py-3 rounded-3xl border-4 border-black bg-white shadow-neo-brutalism hover:bg-yellow-400 hover:text-bybBlack transition">
-          Dashboard
-        </Link>
-        <Link href="/jobs" className="font-bold text-lg text-bybBlack px-6 py-3 rounded-3xl border-4 border-black bg-white shadow-neo-brutalism hover:bg-yellow-400 hover:text-bybBlack transition">
-          Jobs
-        </Link>
-        <Link href="/track" className="font-bold text-lg text-bybBlack px-6 py-3 rounded-3xl border-4 border-black bg-white shadow-neo-brutalism hover:bg-yellow-400 hover:text-bybBlack transition">
-          Track
-        </Link>
         {session && session.user ? (
-          <button
-            onClick={() => signOut()}
-            className="font-bold text-lg text-white px-6 py-3 rounded-3xl border-4 border-black bg-bybPink shadow-neo-brutalism hover:bg-pink-400 hover:text-white transition"
-          >
-            Sign Out
-          </button>
+          <>
+            <Link href="/dashboard" className="font-bold text-lg text-bybBlack px-6 py-3 rounded-3xl border-4 border-black bg-white shadow-neo-brutalism hover:bg-yellow-400 hover:text-bybBlack transition">
+              Dashboard
+            </Link>
+            <Link href="/jobs" className="font-bold text-lg text-bybBlack px-6 py-3 rounded-3xl border-4 border-black bg-white shadow-neo-brutalism hover:bg-yellow-400 hover:text-bybBlack transition">
+              Jobs
+            </Link>
+            <Link href="/track" className="font-bold text-lg text-bybBlack px-6 py-3 rounded-3xl border-4 border-black bg-white shadow-neo-brutalism hover:bg-yellow-400 hover:text-bybBlack transition">
+              Track
+            </Link>
+            <button
+              onClick={() => signOut()}
+              className="font-bold text-lg text-white px-6 py-3 rounded-3xl border-4 border-black bg-bybPink shadow-neo-brutalism hover:bg-pink-400 hover:text-white transition"
+            >
+              Sign Out
+            </button>
+          </>
         ) : null}
       </div>
     </nav>
