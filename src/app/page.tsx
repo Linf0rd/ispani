@@ -1,15 +1,86 @@
 "use client";
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signInSchema, signUpSchema, SignInInput, SignUpInput } from "@/schemas/auth";
+import Link from "next/link";
 
 export default function Home() {
+  const { data: session, status } = useSession();
   const [showModal, setShowModal] = useState(false);
   const [mode, setMode] = useState<'signin' | 'signup'>("signin");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // If user is authenticated, show different home page
+  if (session && session.user) {
+    return (
+      <div className="min-h-screen bg-bybYellow pt-24 px-6" style={{backgroundColor: '#FFE066'}}>
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-bybBlack mb-8">
+            Welcome back, {session.user.name?.split(' ')[0] || 'User'}! 👋
+          </h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+            <Link 
+              href="/dashboard"
+              className="bg-white border-4 border-black rounded-3xl shadow-neo-brutalism p-8 hover:bg-yellow-100 transition group"
+            >
+              <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">📊</div>
+              <h3 className="text-xl font-bold text-bybBlack mb-2">Dashboard</h3>
+              <p className="text-gray-700">View your application progress</p>
+            </Link>
+            
+            <Link 
+              href="/jobs"
+              className="bg-white border-4 border-black rounded-3xl shadow-neo-brutalism p-8 hover:bg-yellow-100 transition group"
+            >
+              <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">💼</div>
+              <h3 className="text-xl font-bold text-bybBlack mb-2">Job Applications</h3>
+              <p className="text-gray-700">Add and manage applications</p>
+            </Link>
+            
+            <Link 
+              href="/track"
+              className="bg-white border-4 border-black rounded-3xl shadow-neo-brutalism p-8 hover:bg-yellow-100 transition group"
+            >
+              <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">📈</div>
+              <h3 className="text-xl font-bold text-bybBlack mb-2">Track Progress</h3>
+              <p className="text-gray-700">Monitor your job search</p>
+            </Link>
+          </div>
+          
+          <div className="mt-12 bg-white border-4 border-black rounded-3xl shadow-neo-brutalism p-8">
+            <h2 className="text-2xl font-bold text-bybBlack mb-4">Quick Stats</h2>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-bybBlack">0</div>
+                <div className="text-gray-700">Applications</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">0</div>
+                <div className="text-gray-700">Interviews</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-bybPink">0</div>
+                <div className="text-gray-700">Offers</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-[#f7f7f7] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-bybBlack"></div>
+      </div>
+    );
+  }
 
   // Sign In Form
   const signInForm = useForm<SignInInput>({
@@ -102,6 +173,7 @@ export default function Home() {
     signUpForm.reset();
   };
 
+  // Unauthenticated home page
   return (
     <div className="min-h-screen bg-[#f7f7f7] flex flex-col items-center justify-center relative">
       <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-black drop-shadow-lg mb-6 text-center">
